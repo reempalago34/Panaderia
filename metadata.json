@@ -1,0 +1,6 @@
+{
+  "name": "MazaMadre Control",
+  "description": "Sistema SaaS de Gestión e Inventarios para Panadería y Pastelería Artesanal con control de pedidos por encargo, explosión de recetas, producción diaria y stock de insumos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
