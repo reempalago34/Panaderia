@@ -441,7 +441,7 @@ export const INITIAL_SETTINGS: BakerySettings = {
   email: 'administracion@mazamadre.com',
   minimum_deposit_percentage: 50,
   minimum_advance_hours: 24,
-  currency_symbol: '€',
+  currency_symbol: '$',
   supabase_url: '',
   supabase_anon_key: '',
   is_supabase_connected: false
