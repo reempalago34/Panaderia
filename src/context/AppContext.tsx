@@ -24,7 +24,8 @@ import {
   INITIAL_RECIPE_ITEMS,
   INITIAL_ORDERS,
   INITIAL_ORDER_ITEMS,
-  INITIAL_SETTINGS
+  INITIAL_SETTINGS,
+  SEED_VERSION
 } from '../data/seedData';
 import { getSupabaseClient, supabaseSignIn, supabaseSignUp } from '../services/supabase';
 import { isViewAllowedForRole, getDefaultViewForRole } from '../utils/permissions';
@@ -99,10 +100,19 @@ const STORAGE_KEYS = {
   RECIPES: 'mazamadre_recipe_items',
   ORDERS: 'mazamadre_orders',
   ORDER_ITEMS: 'mazamadre_order_items',
-  SETTINGS: 'mazamadre_settings'
+  SETTINGS: 'mazamadre_settings',
+  SEED_VERSION: 'mazamadre_seed_version'
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Detecta si los datos guardados en localStorage son de una versión antigua del seed
+  const isSeedStale = (() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.SEED_VERSION) !== String(SEED_VERSION);
+    } catch {
+      return true;
+    }
+  })();
   // Navigation State - Defaults to AUTH view first before everything
   const [navigation, setNavigation] = useState<NavigationState>(() => {
     return { currentView: 'AUTH', selectedItemId: null };
@@ -112,7 +122,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [profiles, setProfiles] = useState<UserProfile[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PROFILES);
-      if (saved) {
+      if (saved && !isSeedStale) {
         const parsed: UserProfile[] = JSON.parse(saved);
         // Clean out legacy demo accounts if present
         const hasLegacyDemos = parsed.some((p) => p.id === 'usr-baker-02' || p.id === 'usr-prod-03' || p.id === 'usr-cashier-04');
@@ -130,7 +140,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userAccounts, setUserAccounts] = useState<UserAccount[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
-      if (saved) {
+      if (saved && !isSeedStale) {
         const parsed: UserAccount[] = JSON.parse(saved);
         const hasLegacyDemos = parsed.some((a) => a.id === 'usr-baker-02' || a.id === 'usr-prod-03' || a.id === 'usr-cashier-04');
         if (hasLegacyDemos) {
@@ -155,7 +165,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.MATERIALS);
-      return saved ? JSON.parse(saved) : INITIAL_RAW_MATERIALS;
+      return saved && !isSeedStale ? JSON.parse(saved) : INITIAL_RAW_MATERIALS;
     } catch {
       return INITIAL_RAW_MATERIALS;
     }
@@ -164,7 +174,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      return saved && !isSeedStale ? JSON.parse(saved) : INITIAL_PRODUCTS;
     } catch {
       return INITIAL_PRODUCTS;
     }
@@ -173,7 +183,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [recipeItems, setRecipeItems] = useState<RecipeItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.RECIPES);
-      return saved ? JSON.parse(saved) : INITIAL_RECIPE_ITEMS;
+      return saved && !isSeedStale ? JSON.parse(saved) : INITIAL_RECIPE_ITEMS;
     } catch {
       return INITIAL_RECIPE_ITEMS;
     }
@@ -182,7 +192,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orders, setOrders] = useState<Order[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      return saved && !isSeedStale ? JSON.parse(saved) : INITIAL_ORDERS;
     } catch {
       return INITIAL_ORDERS;
     }
@@ -191,7 +201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ORDER_ITEMS);
-      return saved ? JSON.parse(saved) : INITIAL_ORDER_ITEMS;
+      return saved && !isSeedStale ? JSON.parse(saved) : INITIAL_ORDER_ITEMS;
     } catch {
       return INITIAL_ORDER_ITEMS;
     }
@@ -200,7 +210,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [settings, setSettings] = useState<BakerySettings>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+      if (saved && !isSeedStale) {
+        const stored = JSON.parse(saved);
+        const merged = { ...INITIAL_SETTINGS, ...stored };
+        if ((merged.currency_symbol ?? '').trim() === '' || merged.currency_symbol === '€') {
+          merged.currency_symbol = '$';
+        }
+        return merged;
+      }
+      return INITIAL_SETTINGS;
     } catch {
       return INITIAL_SETTINGS;
     }
@@ -262,6 +280,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
   }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SEED_VERSION, String(SEED_VERSION));
+  }, []);
 
   // Navigation Helper with Authentication Guard & Role-Based Access Control (RBAC)
   const navigateTo = (view: AppView, selectedItemId: string | null = null, filterCategory: string | null = null) => {

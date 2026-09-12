@@ -5,6 +5,10 @@ export const DEFAULT_ADMIN_USERNAME = 'Admin';
 export const DEFAULT_ADMIN_PASSWORD = 'Admin123';
 export const DEFAULT_DEMO_PASSWORD = 'Admin123';
 
+// Incrementar esta versión cuando cambien los datos demo (precios, catálogo, etc.)
+// para que los datos antiguos guardados en localStorage se recarguen automáticamente.
+export const SEED_VERSION = 2;
+
 export const INITIAL_PROFILES: UserProfile[] = [
   {
     id: 'usr-admin-01',
