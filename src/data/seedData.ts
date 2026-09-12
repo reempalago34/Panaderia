@@ -32,7 +32,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 350.0,
     minimum_stock: 80.0,
-    cost_per_unit: 2500,
+    cost_per_unit: 3200,
     supplier: 'Molinos del Duero Ecológicos',
     last_restocked_at: '2026-08-30T10:00:00Z',
     status: 'OPTIMAL'
@@ -45,7 +45,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 120.0,
     minimum_stock: 40.0,
-    cost_per_unit: 2800,
+    cost_per_unit: 4500,
     supplier: 'Molinos del Duero Ecológicos',
     last_restocked_at: '2026-08-28T09:00:00Z',
     status: 'OPTIMAL'
@@ -58,7 +58,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 18.5,
     minimum_stock: 30.0,
-    cost_per_unit: 3200,
+    cost_per_unit: 8500,
     supplier: 'Harinas Tradicionales del Norte',
     last_restocked_at: '2026-08-20T14:30:00Z',
     status: 'CRITICAL'
@@ -71,7 +71,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 45.0,
     minimum_stock: 15.0,
-    cost_per_unit: 500,
+    cost_per_unit: 1000,
     supplier: 'Obrador Interno',
     last_restocked_at: '2026-09-02T06:00:00Z',
     status: 'OPTIMAL'
@@ -84,7 +84,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 14.0,
     minimum_stock: 25.0,
-    cost_per_unit: 15000,
+    cost_per_unit: 25000,
     supplier: 'Lácteos L\'Artisan',
     last_restocked_at: '2026-08-25T11:00:00Z',
     status: 'CRITICAL'
@@ -97,7 +97,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'l',
     current_stock: 40.0,
     minimum_stock: 20.0,
-    cost_per_unit: 3200,
+    cost_per_unit: 5000,
     supplier: 'Granjas La Campiña',
     last_restocked_at: '2026-09-01T08:00:00Z',
     status: 'OPTIMAL'
@@ -110,7 +110,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 22.0,
     minimum_stock: 10.0,
-    cost_per_unit: 38000,
+    cost_per_unit: 60000,
     supplier: 'Chocolates Valrhona España',
     last_restocked_at: '2026-08-22T16:00:00Z',
     status: 'OPTIMAL'
@@ -123,7 +123,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 3.5,
     minimum_stock: 12.0,
-    cost_per_unit: 14000,
+    cost_per_unit: 22000,
     supplier: 'Lácteos L\'Artisan',
     last_restocked_at: '2026-08-20T10:00:00Z',
     status: 'CRITICAL'
@@ -136,7 +136,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'ud',
     current_stock: 280,
     minimum_stock: 100,
-    cost_per_unit: 600,
+    cost_per_unit: 950,
     supplier: 'Avícola Santa Ana',
     last_restocked_at: '2026-09-01T07:30:00Z',
     status: 'OPTIMAL'
@@ -149,7 +149,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 0.0,
     minimum_stock: 10.0,
-    cost_per_unit: 9000,
+    cost_per_unit: 14000,
     supplier: 'Frutos Secos La Montaña',
     last_restocked_at: '2026-08-10T12:00:00Z',
     status: 'OUT_OF_STOCK'
@@ -162,7 +162,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'kg',
     current_stock: 75.0,
     minimum_stock: 20.0,
-    cost_per_unit: 1200,
+    cost_per_unit: 2400,
     supplier: 'Salinas Mediterráneas',
     last_restocked_at: '2026-08-15T09:00:00Z',
     status: 'OPTIMAL'
@@ -175,7 +175,7 @@ export const INITIAL_RAW_MATERIALS: RawMaterial[] = [
     unit: 'ud',
     current_stock: 85,
     minimum_stock: 30,
-    cost_per_unit: 2200,
+    cost_per_unit: 3500,
     supplier: 'Envases Sostenibles EcoPack',
     last_restocked_at: '2026-08-26T15:00:00Z',
     status: 'OPTIMAL'
@@ -201,7 +201,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Croissant Artesano de Mantequilla AOP',
     category: 'viennoiserie',
     description: 'Hojaldrado clásico con 27 capas perfectas de mantequilla de Normandía, alveolado esponjoso.',
-    price: 9000,
+    price: 6000,
     preparation_time_hours: 18,
     portions_or_weight: '90 g',
     is_active: true,
@@ -213,7 +213,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Pain au Chocolat Doble Barra Valrhona',
     category: 'viennoiserie',
     description: 'Masa hojaldrada crujiente rellena de dos barras de chocolate negro 70% Valrhona.',
-    price: 11000,
+    price: 7500,
     preparation_time_hours: 18,
     portions_or_weight: '105 g',
     is_active: true,
@@ -225,7 +225,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Tarta Vasca de Queso Cremoso (Grande)',
     category: 'pasteleria',
     description: 'Tarta de queso tostada por fuera con corazón fluido y ultra cremoso de queso artesanal.',
-    price: 120000,
+    price: 135000,
     preparation_time_hours: 6,
     portions_or_weight: '10-12 porciones (1.4 kg)',
     is_active: true,
@@ -237,7 +237,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Pan de Centeno Nórdico y Semillas',
     category: 'panaderia',
     description: 'Pan denso y aromático de centeno integral T130 cubierto de semillas tostadas.',
-    price: 22000,
+    price: 16000,
     preparation_time_hours: 24,
     portions_or_weight: '900 g',
     is_active: true,
@@ -249,7 +249,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Baguette Tradición Francesa',
     category: 'panaderia',
     description: 'Elaborada con harina sin aditivos, hidratación del 75% y horneado sobre piedra volcánica.',
-    price: 7000,
+    price: 5000,
     preparation_time_hours: 12,
     portions_or_weight: '320 g',
     is_active: true,
@@ -261,7 +261,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'Corona Brioche Trenzada de Canela',
     category: 'pasteleria',
     description: 'Brioche enriquecido con mantequilla y huevos camperos con relleno de canela de Ceilán.',
-    price: 38000,
+    price: 30000,
     preparation_time_hours: 14,
     portions_or_weight: '550 g',
     is_active: true,
@@ -342,9 +342,9 @@ export const INITIAL_ORDERS: Order[] = [
     created_at: getOffsetDate(-1, 15),
     delivery_date: getOffsetDate(1, 11), // Mañana a las 11:00
     status: 'CONFIRMED',
-    total_amount: 240000,
-    deposit_amount: 120000, // Exacto 50%
-    remaining_balance: 120000,
+    total_amount: 270000,
+    deposit_amount: 135000, // Exacto 50%
+    remaining_balance: 135000,
     payment_method: 'bizum',
     notes: '2 Tartas Vascas. Poner dedicatoria: "Felicidades Jordi".'
   },
@@ -357,9 +357,9 @@ export const INITIAL_ORDERS: Order[] = [
     created_at: getOffsetDate(-1, 10),
     delivery_date: getOffsetDate(1, 7), // Mañana a las 07:00
     status: 'CONFIRMED',
-    total_amount: 180000,
-    deposit_amount: 120000, // > 50%
-    remaining_balance: 60000,
+    total_amount: 120000,
+    deposit_amount: 70000, // > 50%
+    remaining_balance: 50000,
     payment_method: 'tarjeta',
     notes: '20 Croissants artesanos de mantequilla recién horneados.'
   },
@@ -387,8 +387,8 @@ export const INITIAL_ORDERS: Order[] = [
     created_at: getOffsetDate(-4, 9),
     delivery_date: getOffsetDate(-1, 8),
     status: 'DELIVERED',
-    total_amount: 450000,
-    deposit_amount: 450000,
+    total_amount: 300000,
+    deposit_amount: 300000,
     remaining_balance: 0, // Cobrado completo
     payment_method: 'transferencia',
     notes: 'Pedido recurrente semanal entregado con éxito.'
@@ -402,9 +402,9 @@ export const INITIAL_ORDERS: Order[] = [
     created_at: getOffsetDate(0, 9),
     delivery_date: getOffsetDate(2, 18), // En 2 días
     status: 'BLOCKED_BY_INSUMOS',
-    total_amount: 330000,
-    deposit_amount: 200000,
-    remaining_balance: 130000,
+    total_amount: 240000,
+    deposit_amount: 140000,
+    remaining_balance: 100000,
     payment_method: 'tarjeta',
     notes: '15 Panes de Centeno y Semillas para catering degustación.',
     blocked_reason: 'Falta stock crítico de "Mix de Semillas Tostadas" (Stock actual: 0.0 kg, requerido: 1.05 kg) y "Harina de Centeno Integral T130" insuficiente.'
@@ -415,20 +415,20 @@ export const INITIAL_ORDER_ITEMS: OrderItem[] = [
   // Ord 001: 12 Hogazas Tradicionales (12 * 18,000 = 216,000)
   { id: 'item-001', order_id: 'ord-001', product_id: 'prod-001', quantity: 12, unit_price: 18000, subtotal: 216000 },
 
-  // Ord 002: 2 Tartas Vascas (2 * 120,000 = 240,000)
-  { id: 'item-002', order_id: 'ord-002', product_id: 'prod-004', quantity: 2, unit_price: 120000, subtotal: 240000 },
+  // Ord 002: 2 Tartas Vascas (2 * 135,000 = 270,000)
+  { id: 'item-002', order_id: 'ord-002', product_id: 'prod-004', quantity: 2, unit_price: 135000, subtotal: 270000 },
 
-  // Ord 003: 20 Croissants (20 * 9,000 = 180,000)
-  { id: 'item-003', order_id: 'ord-003', product_id: 'prod-002', quantity: 20, unit_price: 9000, subtotal: 180000 },
+  // Ord 003: 20 Croissants (20 * 6,000 = 120,000)
+  { id: 'item-003', order_id: 'ord-003', product_id: 'prod-002', quantity: 20, unit_price: 6000, subtotal: 120000 },
 
   // Ord 004: 6 Hogazas (6 * 18,000 = 108,000)
   { id: 'item-004', order_id: 'ord-004', product_id: 'prod-001', quantity: 6, unit_price: 18000, subtotal: 108000 },
 
-  // Ord 005: 50 Croissants (50 * 9,000 = 450,000)
-  { id: 'item-005', order_id: 'ord-005', product_id: 'prod-002', quantity: 50, unit_price: 9000, subtotal: 450000 },
+  // Ord 005: 50 Croissants (50 * 6,000 = 300,000)
+  { id: 'item-005', order_id: 'ord-005', product_id: 'prod-002', quantity: 50, unit_price: 6000, subtotal: 300000 },
 
-  // Ord 006: 15 Panes de Centeno y Semillas (15 * 22,000 = 330,000)
-  { id: 'item-006', order_id: 'ord-006', product_id: 'prod-005', quantity: 15, unit_price: 22000, subtotal: 330000 }
+  // Ord 006: 15 Panes de Centeno y Semillas (15 * 16,000 = 240,000)
+  { id: 'item-006', order_id: 'ord-006', product_id: 'prod-005', quantity: 15, unit_price: 16000, subtotal: 240000 }
 ];
 
 export const INITIAL_SETTINGS: BakerySettings = {
