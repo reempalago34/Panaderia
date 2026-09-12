@@ -77,7 +77,7 @@ export const AuthView: React.FC = () => {
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('cashier');
+  const [regRole, setRegRole] = useState<UserRole>(() => (currentUser?.role === 'admin' ? 'cashier' : 'customer'));
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [selectedAvatarUrl, setSelectedAvatarUrl] = useState(PRESET_AVATARS[0].url);
@@ -95,7 +95,7 @@ export const AuthView: React.FC = () => {
     try {
       const res = await login(loginEmail, loginPassword);
       if (res.success) {
-        navigateTo('DASHBOARD');
+        // login() already navigates to the default view for the authenticated role
       } else {
         setLoginError(res.error || 'Error al iniciar sesión.');
       }
@@ -152,7 +152,7 @@ export const AuthView: React.FC = () => {
         setRegPassword('');
         setRegConfirmPassword('');
         setCustomAvatarUrl('');
-        navigateTo('DASHBOARD');
+        // registerUser() already navigates to the default view for the new role
       } else {
         setRegError(res.error || 'Error al registrar el nuevo usuario.');
       }
@@ -204,6 +204,9 @@ export const AuthView: React.FC = () => {
   };
 
   const isSupabaseConfigured = Boolean(settings.supabase_url && settings.supabase_anon_key);
+
+  // Only an authenticated admin may create staff/admin accounts (privilege escalation guard)
+  const isAdminSession = currentUser?.role === 'admin';
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12 space-y-7">
@@ -290,7 +293,7 @@ export const AuthView: React.FC = () => {
             }`}
           >
             <UserPlus className="w-4 h-4" />
-            <span>Registrar Personal</span>
+            <span>{isAdminSession ? 'Registrar Personal' : 'Registrarse / Alta Cliente'}</span>
           </button>
         </div>
 
@@ -408,10 +411,12 @@ export const AuthView: React.FC = () => {
             <form onSubmit={handleRegisterSubmit} className="space-y-5">
               <div>
                 <h2 className="font-heading text-lg font-bold text-white mb-1">
-                  Alta de Personal del Obrador
+                  {isAdminSession ? 'Alta de Personal del Obrador' : 'Registro de Cliente Particular'}
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Cree una cuenta para panaderos, pasteleros, administradores o personal de mostrador.
+                  {isAdminSession
+                    ? 'Cree cuentas para panaderos, pasteleros, administradores o personal de mostrador.'
+                    : 'Cree su cuenta para realizar encargos personalizados y consultar sus propios pedidos.'}
                 </p>
               </div>
 
@@ -480,11 +485,19 @@ export const AuthView: React.FC = () => {
                     value={regRole}
                     onChange={(e) => setRegRole(e.target.value as UserRole)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-hidden focus:border-amber-400 cursor-pointer"
+                    disabled={!isAdminSession}
                   >
-                    <option value="admin">Administrador / Propietario</option>
-                    <option value="head_baker">Maestro Panadero / Jefe Obrador</option>
-                    <option value="production_manager">Encargada de Producción & Almacén</option>
-                    <option value="cashier">Atención Mostrador & Caja</option>
+                    {isAdminSession ? (
+                      <>
+                        <option value="admin">Administrador / Propietario</option>
+                        <option value="head_baker">Maestro Panadero / Jefe Obrador</option>
+                        <option value="production_manager">Encargada de Producción & Almacén</option>
+                        <option value="cashier">Atención Mostrador & Caja</option>
+                        <option value="customer">Cliente Particular</option>
+                      </>
+                    ) : (
+                      <option value="customer">Cliente Particular</option>
+                    )}
                   </select>
                 </div>
               </div>
@@ -584,7 +597,7 @@ export const AuthView: React.FC = () => {
                   ) : (
                     <>
                       <UserPlus className="w-4 h-4" />
-                      <span>Registrar Personal y Acceder</span>
+                      <span>{isAdminSession ? 'Registrar Personal y Acceder' : 'Crear Cuenta de Cliente'}</span>
                     </>
                   )}
                 </button>

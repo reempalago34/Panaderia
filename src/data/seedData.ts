@@ -1,4 +1,5 @@
 import { UserProfile, UserAccount, RawMaterial, Product, RecipeItem, Order, OrderItem, BakerySettings } from '../types';
+import { HASHED_ADMIN_PASSWORD } from '../utils/passwordHash';
 
 export const DEFAULT_ADMIN_USERNAME = 'Admin';
 export const DEFAULT_ADMIN_PASSWORD = 'Admin123';
@@ -18,7 +19,7 @@ export const INITIAL_PROFILES: UserProfile[] = [
 export const INITIAL_ACCOUNTS: UserAccount[] = [
   {
     ...INITIAL_PROFILES[0],
-    password: DEFAULT_ADMIN_PASSWORD
+    password: HASHED_ADMIN_PASSWORD
   }
 ];
 

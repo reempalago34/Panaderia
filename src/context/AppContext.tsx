@@ -28,6 +28,7 @@ import {
 } from '../data/seedData';
 import { getSupabaseClient, supabaseSignIn, supabaseSignUp } from '../services/supabase';
 import { isViewAllowedForRole, getDefaultViewForRole } from '../utils/permissions';
+import { hashPassword, isHashedPassword, HASHED_ADMIN_PASSWORD } from '../utils/passwordHash';
 
 interface AppContextType {
   navigation: NavigationState;
@@ -136,7 +137,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return INITIAL_ACCOUNTS;
         }
         // Ensure admin has password Admin123
-        return parsed.map((a) => (a.role === 'admin' ? { ...a, password: 'Admin123' } : a));
+        return parsed.map((a) => (a.role === 'admin' ? { ...a, password: HASHED_ADMIN_PASSWORD } : a));
       }
       return INITIAL_ACCOUNTS;
     } catch {
@@ -348,17 +349,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const targetAccount: UserAccount = account || {
       ...profile!,
-      password: profile?.role === 'admin' ? 'Admin123' : 'Admin123'
+      password: profile?.role === 'admin' ? HASHED_ADMIN_PASSWORD : undefined
     };
 
-    // Check password matching (supports Admin123 or stored password)
+    // Check password matching. Prefers hashed comparison, falls back to legacy
+    // plaintext accounts stored by previous versions and the demo admin password.
+    const storedPassword = targetAccount.password || '';
+    const enteredHash = await hashPassword(password);
     const isPasswordValid =
-      targetAccount.password === password ||
-      (targetAccount.role === 'admin' && (password === 'Admin123' || password === 'admin123')) ||
-      password === targetAccount.password;
+      (isHashedPassword(storedPassword) && storedPassword === enteredHash) ||
+      (!isHashedPassword(storedPassword) && storedPassword === password) ||
+      (targetAccount.role === 'admin' && (password === 'Admin123' || password === 'admin123'));
 
     if (!isPasswordValid) {
       return { success: false, error: 'Contraseña incorrecta. Verifique sus credenciales de acceso.' };
+    }
+
+    // Security hardening: migrate legacy plaintext accounts to hashed format in place.
+    if (account && !isHashedPassword(storedPassword) && storedPassword) {
+      const newHash = await hashPassword(storedPassword);
+      setUserAccounts((prev) => prev.map((a) => (a.id === account?.id ? { ...a, password: newHash } : a)));
     }
 
     const authenticatedProfile: UserProfile = {
@@ -399,6 +409,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (!userData.password || userData.password.length < 6) {
       return { success: false, error: 'La contraseña debe contener al menos 6 caracteres.' };
+    }
+
+    // Privilege escalation guard: only an authenticated admin may create staff/admin accounts.
+    // Public self-registration is limited to customer accounts.
+    const isAdminRegistring = currentUser?.role === 'admin';
+    if (userData.role !== 'customer' && !isAdminRegistring) {
+      return {
+        success: false,
+        error: 'Acceso restringido: Solo el Administrador del obrador puede dar de alta personal (panadero, producción, caja o admin). Los clientes pueden registrarse como cuenta de cliente.'
+      };
     }
 
     // Check duplicate
@@ -457,7 +477,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const newAccount: UserAccount = {
       ...newProfile,
-      password: userData.password
+      password: await hashPassword(userData.password)
     };
 
     setProfiles((prev) => [newProfile, ...prev]);
@@ -908,16 +928,99 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
 
-    let processedCount = 0;
-    let blockedCount = 0;
+    // Running stock ledger so consecutive orders in the batch see the deductions
+    // of the previous ones (avoids double-deduction and incorrect blocking).
+    const stockLedger = new Map<string, number>(rawMaterials.map((m) => [m.id, m.current_stock]));
+    const requiredMap = new Map<string, string>(); // raw_material_id -> material name
+    const unitMap = new Map<string, string>(); // raw_material_id -> unit
+
+    const computeRequirements = (orderId: string): Array<{ raw_material_id: string; required_quantity: number }> => {
+      const items = orderItems.filter((oi) => oi.order_id === orderId);
+      const materialQty = new Map<string, number>();
+      items.forEach((orderItem) => {
+        const recipes = recipeItems.filter((r) => r.product_id === orderItem.product_id);
+        recipes.forEach((rec) => {
+          materialQty.set(rec.raw_material_id, (materialQty.get(rec.raw_material_id) || 0) + rec.quantity * orderItem.quantity);
+        });
+      });
+      const result: Array<{ raw_material_id: string; required_quantity: number }> = [];
+      materialQty.forEach((qty, matId) => {
+        if (!stockLedger.has(matId)) {
+          const mat = rawMaterials.find((m) => m.id === matId);
+          if (mat) {
+            stockLedger.set(matId, mat.current_stock);
+            requiredMap.set(matId, mat.name);
+            unitMap.set(matId, mat.unit);
+          }
+        }
+        result.push({ raw_material_id: matId, required_quantity: Number(qty.toFixed(3)) });
+      });
+      return result;
+    };
+
+    const orderStatusUpdates = new Map<string, { status: OrderStatus; blocked_reason?: string }>();
 
     candidateOrders.forEach((ord) => {
-      const res = processOrderProduction(ord.id);
-      if (res.success) {
-        processedCount++;
+      const requirements = computeRequirements(ord.id);
+      // Check suffciency against the running ledger
+      const missingItems: Array<string> = [];
+      const materialDeductions: Array<{ raw_material_id: string; required_quantity: number }> = [];
+
+      requirements.forEach((req) => {
+        const ledgerStock = stockLedger.get(req.raw_material_id) ?? 0;
+        if (ledgerStock < req.required_quantity) {
+          const name = requiredMap.get(req.raw_material_id) || 'Desconocido';
+          const deficit = Number((req.required_quantity - ledgerStock).toFixed(3));
+          const unit = unitMap.get(req.raw_material_id) || '';
+          missingItems.push(`Falta ${name} (Déficit: ${deficit} ${unit})`);
+        } else {
+          materialDeductions.push(req);
+        }
+      });
+
+      if (missingItems.length > 0) {
+        // RN-04: Prevención - block order and do NOT deduct anything
+        orderStatusUpdates.set(ord.id, {
+          status: 'BLOCKED_BY_INSUMOS',
+          blocked_reason: `[RN-04] Bloqueado por falta de insumos: ${missingItems.join('; ')}`
+        });
       } else {
-        blockedCount++;
+        // RN-03: Apply deductions to ledger (accumulated across the batch)
+        materialDeductions.forEach((md) => {
+          const current = stockLedger.get(md.raw_material_id) ?? 0;
+          stockLedger.set(md.raw_material_id, Number(Math.max(0, current - md.required_quantity).toFixed(3)));
+        });
+        orderStatusUpdates.set(ord.id, { status: 'IN_PRODUCTION', blocked_reason: undefined });
       }
+    });
+
+    // Apply final order statuses
+    setOrders((prev) =>
+      prev.map((o) => {
+        const update = orderStatusUpdates.get(o.id);
+        if (!update) return o;
+        return { ...o, status: update.status, blocked_reason: update.blocked_reason };
+      })
+    );
+
+    // Apply final raw material deductions (functional update on the actual state)
+    setRawMaterials((prev) =>
+      prev.map((mat) => {
+        const ledgerStock = stockLedger.get(mat.id);
+        if (ledgerStock === undefined || ledgerStock === mat.current_stock) {
+          // Unchanged material, keep original status untouched
+          return mat;
+        }
+        const status = calculateStockStatus(ledgerStock, mat.minimum_stock);
+        return { ...mat, current_stock: ledgerStock, status };
+      })
+    );
+
+    let processedCount = 0;
+    let blockedCount = 0;
+    orderStatusUpdates.forEach((u) => {
+      if (u.status === 'IN_PRODUCTION') processedCount++;
+      else blockedCount++;
     });
 
     const summary = `Producción Diaria procesada: ${processedCount} pedidos enviados al horno/obrador, ${blockedCount} pedidos bloqueados por insumos.`;

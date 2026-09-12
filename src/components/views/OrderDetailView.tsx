@@ -43,7 +43,19 @@ export const OrderDetailView: React.FC = () => {
   const isProdManager = currentUser?.role === 'production_manager';
   const isAdmin = currentUser?.role === 'admin';
 
-  const orderId = navigation.selectedItemId || orders[0]?.id;
+  // Customer's own orders (respecting privacy): most recent first
+  const customerOrders = isCustomer
+    ? orders
+        .filter(
+          (o) =>
+            o.customer_email.toLowerCase() === currentUser?.email.toLowerCase() ||
+            o.customer_name.toLowerCase() === currentUser?.full_name.toLowerCase()
+        )
+        .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+    : [];
+
+  // Fallback for customers: never reveal another customer's order, use their own first
+  const orderId = navigation.selectedItemId || (isCustomer ? customerOrders[0]?.id : orders[0]?.id);
   const order = orders.find((o) => o.id === orderId);
 
   // If customer, verify identity to prevent viewing other customers' private orders
@@ -145,6 +157,42 @@ export const OrderDetailView: React.FC = () => {
           <span>{isCustomer ? 'Descargar / Imprimir Comprobante' : 'Imprimir Comanda del Taller'}</span>
         </button>
       </div>
+
+      {/* Customer: "Mis Encargos" Selector to switch between own orders */}
+      {isCustomer && customerOrders.length > 0 && (
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+            <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+            Mis Encargos ({customerOrders.length})
+          </span>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            {customerOrders.map((ord) => {
+              const isSelected = ord.id === order?.id;
+              const statusColor =
+                ord.status === 'DELIVERED'
+                  ? 'text-emerald-300 border-emerald-500/40'
+                  : ord.status === 'IN_PRODUCTION' || ord.status === 'READY'
+                    ? 'text-amber-300 border-amber-500/40'
+                    : ord.status === 'BLOCKED_BY_INSUMOS'
+                      ? 'text-red-300 border-red-500/40'
+                      : 'text-slate-300 border-slate-600';
+              return (
+                <button
+                  key={ord.id}
+                  onClick={() => navigateTo('ORDER_DETAIL', ord.id)}
+                  className={`shrink-0 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-md'
+                      : `bg-slate-900 ${statusColor} hover:bg-slate-800`
+                  }`}
+                >
+                  {ord.order_number}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Main Order Header Card */}
       <div className="bg-[#1E293B] border border-slate-700/80 rounded-2xl p-6 shadow-xl space-y-4">

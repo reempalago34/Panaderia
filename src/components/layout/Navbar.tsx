@@ -21,13 +21,22 @@ import { isViewAllowedForRole, getDefaultViewForRole, ROLE_CAPABILITIES } from '
 export const Navbar: React.FC = () => {
   const { navigation, navigateTo, currentUser, logout, rawMaterials, orders, settings } = useApp();
 
+  // For customer "Mis Encargos": resolve to their most recent personal order
+  const myFirstOrderId = (() => {
+    if (!currentUser || currentUser.role !== 'customer') return undefined;
+    const mine = orders
+      .filter((o) => o.customer_email.toLowerCase() === currentUser.email.toLowerCase() && o.status !== 'CANCELLED')
+      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    return mine[0]?.id;
+  })();
+
   // Calculate live badge counts
   const criticalMaterialsCount = rawMaterials.filter((m) => m.status === 'CRITICAL' || m.status === 'OUT_OF_STOCK').length;
   const activeOrdersCount = orders.filter((o) => o.status !== 'DELIVERED' && o.status !== 'CANCELLED').length;
   const blockedOrdersCount = orders.filter((o) => o.status === 'BLOCKED_BY_INSUMOS').length;
 
   // Tailored navigation items based on the verified role
-  const getNavItems = (): Array<{ view: AppView; label: string; icon: React.ReactNode; badge?: number; badgeColor?: string }> => {
+  const getNavItems = (): Array<{ view: AppView; label: string; icon: React.ReactNode; badge?: number; badgeColor?: string; selectedItemId?: string }> => {
     if (!currentUser) return [];
 
     const role = currentUser.role;
@@ -53,11 +62,12 @@ export const Navbar: React.FC = () => {
         ...(myOrders.length > 0
           ? [
               {
-                view: 'ORDER_DETAIL' as AppView,
+                view: myFirstOrderId ? ('ORDER_DETAIL' as AppView) : ('ORDER_DETAIL' as AppView),
                 label: 'Mis Encargos',
                 icon: <ShoppingBag className="w-4 h-4 text-emerald-400" />,
                 badge: activeMyOrders > 0 ? activeMyOrders : undefined,
-                badgeColor: 'bg-emerald-500 text-white'
+                badgeColor: 'bg-emerald-500 text-white',
+                selectedItemId: myFirstOrderId
               }
             ]
           : [])
@@ -215,7 +225,7 @@ export const Navbar: React.FC = () => {
                 return (
                   <button
                     key={item.view}
-                    onClick={() => navigateTo(item.view)}
+                    onClick={() => navigateTo(item.view, item.selectedItemId ?? null)}
                     className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       isActive
                         ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-xs'
@@ -290,10 +300,10 @@ export const Navbar: React.FC = () => {
             {navItems.map((item) => {
               const isActive = navigation.currentView === item.view;
               return (
-                <button
-                  key={item.view}
-                  onClick={() => navigateTo(item.view)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+<button
+                    key={item.view}
+                    onClick={() => navigateTo(item.view, item.selectedItemId ?? null)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                     isActive
                       ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
                       : 'text-slate-400 hover:text-slate-200 bg-slate-800/40'
