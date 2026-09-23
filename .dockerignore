@@ -7,6 +7,7 @@ coverage
 *.md
 .env*
 !.env.example
+!.env.production
 docker-compose*.yml
 Dockerfile
 .dockerignore

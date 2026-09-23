@@ -446,7 +446,7 @@ export const INITIAL_SETTINGS: BakerySettings = {
   minimum_deposit_percentage: 50,
   minimum_advance_hours: 24,
   currency_symbol: '$',
-  supabase_url: '',
-  supabase_anon_key: '',
+  supabase_url: import.meta.env.VITE_SUPABASE_URL || '',
+  supabase_anon_key: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
   is_supabase_connected: false
 };
